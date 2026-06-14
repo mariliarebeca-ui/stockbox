@@ -1,311 +1,53 @@
 <!doctype html>
 <html lang="pt">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>StockBox</title>
-    <style>
-      :root {
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        color: #0f172a;
-        background: #f8fafc;
-      }
-      * { box-sizing: border-box; }
-      body { margin: 0; }
-      button, input { font: inherit; }
-      button { cursor: pointer; border: 0; border-radius: 14px; font-weight: 700; }
-      .app { min-height: 100vh; padding: 20px; padding-bottom: 110px; }
-      .hero { background: #0f172a; color: white; border-radius: 26px; padding: 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-      .hero h1 { font-size: clamp(32px, 5vw, 56px); margin: 4px 0; }
-      .hero p { margin: 0; color: #cbd5e1; }
-      .eyebrow { color: #38bdf8 !important; font-weight: 900; letter-spacing: 0.14em; }
-      .heroStats { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-      .heroStats span { background: rgba(255,255,255,.1); padding: 12px 16px; border-radius: 16px; display: flex; align-items: center; gap: 8px; }
-      .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 18px 0; }
-      .tabs button { padding: 18px 12px; background: white; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,.08); }
-      .tabs button.active { background: #0284c7; color: white; }
-      .message, .alert { border-radius: 18px; padding: 16px 18px; margin-bottom: 14px; }
-      .message { background: #e0f2fe; color: #075985; }
-      .alert { background: #fff7ed; color: #9a3412; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-      .alert button, .orderBar button, .scannerActions button { background: #0284c7; color: white; padding: 14px 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-      .searchBox { display: flex; align-items: center; gap: 12px; background: white; border-radius: 18px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(15,23,42,.08); margin-bottom: 18px; }
-      .searchBox input, .scannerPanel input { width: 100%; border: 0; outline: 0; font-size: 18px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-      .card { background: white; border-radius: 22px; overflow: hidden; box-shadow: 0 1px 3px rgba(15,23,42,.09); display: flex; flex-direction: column; }
-      .card img { width: 100%; height: 170px; object-fit: cover; background: #e2e8f0; }
-      .cardBody { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-      .card h3 { margin: 0; font-size: 20px; }
-      .card p { margin: 0; color: #64748b; }
-      .category { width: max-content; background: #e0f2fe; color: #0369a1; padding: 6px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; }
-      .sku { font-size: 13px; }
-      .stock { background: #f1f5f9; border-radius: 12px; padding: 10px; }
-      .stock.low { background: #fee2e2; color: #991b1b; }
-      .qtyRow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-top: auto; }
-      .qtyRow button { min-height: 48px; background: #e2e8f0; color: #0f172a; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-      .qtyRow span { min-width: 48px; text-align: center; font-size: 22px; font-weight: 900; }
-      .orderBar { position: fixed; left: 20px; right: 20px; bottom: 20px; background: #0f172a; color: white; border-radius: 22px; padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 20px 40px rgba(15,23,42,.25); }
-      .orderBar div { display: flex; flex-direction: column; }
-      .orderBar span { color: #cbd5e1; }
-      .scannerPanel { max-width: 720px; margin: 34px auto; background: white; border-radius: 26px; padding: 30px; text-align: center; box-shadow: 0 1px 4px rgba(15,23,42,.1); }
-      .scannerPanel h2 { font-size: 34px; margin: 12px 0; }
-      .scannerPanel input { border: 2px solid #cbd5e1; border-radius: 16px; padding: 18px; margin: 18px 0; text-align: center; }
-      .scannerActions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-      .scannerActions .success { background: #16a34a; }
-      .scannerActions .danger { background: #dc2626; }
-      .history { background: white; border-radius: 22px; padding: 20px; }
-      .movement { display: grid; grid-template-columns: 1fr 180px 80px 180px; gap: 12px; border-bottom: 1px solid #e2e8f0; padding: 14px 0; align-items: center; }
-      .plansHero { background: linear-gradient(135deg, #0f172a, #075985); color: white; border-radius: 26px; padding: 30px; margin-bottom: 18px; }
-      .plansHero h2 { margin: 0 0 10px; font-size: clamp(30px, 4vw, 46px); }
-      .plansHero p { max-width: 940px; color: #dbeafe; font-size: 18px; line-height: 1.55; }
-      .plansGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-      .planCard { background: white; border-radius: 24px; padding: 22px; box-shadow: 0 1px 4px rgba(15,23,42,.1); border-top: 8px solid #0284c7; }
-      .planCard.basic { border-top-color: #16a34a; }
-      .planCard.smart { border-top-color: #0284c7; }
-      .planCard.autonomous { border-top-color: #7c3aed; }
-      .planCard h3 { margin: 0; font-size: 26px; }
-      .planCard .subtitle { color: #64748b; margin: 8px 0 16px; }
-      .planSectionTitle { font-weight: 900; color: #0f172a; margin-top: 18px; }
-      .planCard ul, .roadmap ul { padding-left: 20px; line-height: 1.7; }
-      .planCard li, .roadmap li { margin-bottom: 4px; }
-      .vision, .roadmap { background: white; border-radius: 24px; padding: 24px; box-shadow: 0 1px 4px rgba(15,23,42,.1); margin-top: 18px; }
-      .vision p, .roadmap p { color: #475569; line-height: 1.6; }
-      .roadmapGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-      .roadmapStep { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; }
-      .roadmapStep h4 { margin: 0 0 8px; }
-      @media (max-width: 980px) {
-        .plansGrid { grid-template-columns: 1fr; }
-      }
-      @media (max-width: 760px) {
-        .hero, .alert, .orderBar { flex-direction: column; align-items: stretch; }
-        .tabs { grid-template-columns: 1fr 1fr; }
-        .movement { grid-template-columns: 1fr; }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="app">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">STOCKBOX</p>
-          <h1>Despensa Digital</h1>
-          <p>Cliente TOT - Demonstração · Despensa principal</p>
-        </div>
-        <div class="heroStats">
-          <span id="productCount">4 produtos</span>
-          <span id="cartCount">0 linhas</span>
-        </div>
-      </header>
-
-      <nav class="tabs">
-        <button data-tab="order" class="active">Encomendar</button>
-        <button data-tab="stock">Stock</button>
-        <button data-tab="scanner">Código de barras</button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>StockBox | Despensa Digital TOT</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0f172a;background:#f8fafc}*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{cursor:pointer;border:0;border-radius:14px;font-weight:800}.app{min-height:100vh;padding:20px;padding-bottom:110px}.topbar{position:sticky;top:0;z-index:20;background:rgba(248,250,252,.86);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;gap:14px;margin:-20px -20px 18px;padding:16px 20px;border-bottom:1px solid #e2e8f0}.brand{display:flex;align-items:center;gap:10px;font-weight:950}.logo{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#0284c7,#7c3aed);display:grid;place-items:center;color:white}.mainNav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.mainNav button{background:white;color:#334155;padding:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.08)}.mainNav button.active{background:#0284c7;color:white}.landingHero{position:relative;overflow:hidden;background:radial-gradient(circle at 80% 0%,#38bdf8 0,#0284c7 24%,transparent 42%),linear-gradient(135deg,#0f172a 0%,#172554 58%,#020617 100%);color:white;border-radius:34px;padding:44px;display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;min-height:520px}.landingHero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(90deg,#000,transparent)}.landingHero>*{position:relative}.eyebrow{color:#38bdf8!important;font-weight:950;letter-spacing:.14em;text-transform:uppercase}.landingHero h1{font-size:clamp(42px,6vw,76px);line-height:.96;margin:8px 0 18px}.landingHero p{font-size:20px;line-height:1.55;color:#dbeafe;max-width:760px}.heroButtons{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.primaryBtn,.secondaryBtn{padding:16px 20px}.primaryBtn{background:#0284c7;color:white}.secondaryBtn{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.22)}.mockDashboard{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:30px;padding:18px;box-shadow:0 30px 80px rgba(2,6,23,.35)}.mockHeader{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}.pill{background:rgba(255,255,255,.14);border-radius:999px;padding:8px 12px;color:#e0f2fe;font-weight:800}.mockGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.mockCard{background:white;color:#0f172a;border-radius:20px;padding:18px;min-height:132px}.mockCard strong{font-size:28px}.mockCard span{display:block;color:#64748b;margin-top:6px}.pulse{animation:pulse 2.4s infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}.section{margin-top:22px}.sectionTitle{font-size:34px;margin:0 0 8px}.sectionLead{color:#475569;line-height:1.65;max-width:920px;font-size:18px}.featureGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.feature,.market,.step,.planCard,.vision,.roadmap,.history{background:white;border-radius:24px;padding:22px;box-shadow:0 1px 4px rgba(15,23,42,.1)}.feature .icon,.market .icon{font-size:34px}.feature h3,.market h3,.step h3{margin:10px 0 8px}.feature p,.market p,.step p,.planCard p,.vision p,.roadmap p{color:#475569;line-height:1.55}.problemGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.problem{background:#fff7ed;color:#9a3412;border-radius:22px;padding:18px;font-weight:850}.process{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.step{position:relative}.step small{display:inline-block;background:#e0f2fe;color:#0369a1;padding:6px 10px;border-radius:999px;font-weight:900}.plansHero{background:linear-gradient(135deg,#0f172a,#075985);color:white;border-radius:26px;padding:30px;margin-bottom:18px}.plansHero h2{margin:0 0 10px;font-size:clamp(30px,4vw,46px)}.plansHero p{max-width:940px;color:#dbeafe;font-size:18px;line-height:1.55}.plansGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.planCard{border-top:8px solid #0284c7}.planCard.basic{border-top-color:#16a34a}.planCard.smart{border-top-color:#0284c7}.planCard.autonomous{border-top-color:#7c3aed}.planCard h3{margin:0;font-size:26px}.subtitle{color:#64748b;margin:8px 0 16px}.planSectionTitle{font-weight:950;color:#0f172a;margin-top:18px}.planCard ul,.roadmap ul{padding-left:20px;line-height:1.7}.vision,.roadmap{margin-top:18px}.roadmapGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.roadmapStep{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:16px}.hero{background:#0f172a;color:white;border-radius:26px;padding:28px;display:flex;align-items:center;justify-content:space-between;gap:20px}.hero h1{font-size:clamp(32px,5vw,56px);margin:4px 0}.hero p{margin:0;color:#cbd5e1}.heroStats{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}.heroStats span{background:rgba(255,255,255,.1);padding:12px 16px;border-radius:16px}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.tabs button{padding:18px 12px;background:white;color:#334155;box-shadow:0 1px 2px rgba(15,23,42,.08)}.tabs button.active{background:#0284c7;color:white}.message,.alert{border-radius:18px;padding:16px 18px;margin-bottom:14px}.message{background:#e0f2fe;color:#075985}.alert{background:#fff7ed;color:#9a3412;display:flex;justify-content:space-between;align-items:center;gap:12px}.alert button,.orderBar button,.scannerActions button{background:#0284c7;color:white;padding:14px 18px}.searchBox{display:flex;align-items:center;gap:12px;background:white;border-radius:18px;padding:14px 18px;box-shadow:0 1px 3px rgba(15,23,42,.08);margin-bottom:18px}.searchBox input,.scannerPanel input{width:100%;border:0;outline:0;font-size:18px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}.card{background:white;border-radius:22px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.09);display:flex;flex-direction:column}.card img{width:100%;height:170px;object-fit:cover;background:#e2e8f0}.cardBody{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}.card h3{margin:0;font-size:20px}.card p{margin:0;color:#64748b}.category{width:max-content;background:#e0f2fe;color:#0369a1;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:800}.sku{font-size:13px}.stock{background:#f1f5f9;border-radius:12px;padding:10px}.stock.low{background:#fee2e2;color:#991b1b}.qtyRow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:auto}.qtyRow button{min-height:48px;background:#e2e8f0;color:#0f172a}.qtyRow span{min-width:48px;text-align:center;font-size:22px;font-weight:900}.orderBar{position:fixed;left:20px;right:20px;bottom:20px;background:#0f172a;color:white;border-radius:22px;padding:16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 20px 40px rgba(15,23,42,.25)}.orderBar span{color:#cbd5e1}.scannerPanel{max-width:720px;margin:34px auto;background:white;border-radius:26px;padding:30px;text-align:center;box-shadow:0 1px 4px rgba(15,23,42,.1)}.scannerPanel h2{font-size:34px;margin:12px 0}.scannerPanel input{border:2px solid #cbd5e1;border-radius:16px;padding:18px;margin:18px 0;text-align:center}.scannerActions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.scannerActions .success{background:#16a34a}.scannerActions .danger{background:#dc2626}.movement{display:grid;grid-template-columns:1fr 180px 80px 180px;gap:12px;border-bottom:1px solid #e2e8f0;padding:14px 0;align-items:center}@media(max-width:1000px){.landingHero,.featureGrid,.problemGrid,.process,.plansGrid{grid-template-columns:1fr}.landingHero{padding:30px}.mockGrid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.topbar{position:relative;align-items:flex-start;flex-direction:column}.hero,.alert,.orderBar{flex-direction:column;align-items:stretch}.tabs{grid-template-columns:1fr 1fr}.movement{grid-template-columns:1fr}.mockGrid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <div class="brand"><div class="logo">S</div><span>StockBox by TOT</span></div>
+      <nav class="mainNav">
+        <button data-tab="home" class="active">Início</button>
+        <button data-tab="order">Dispensa</button>
+        <button data-tab="scanner">Scanner</button>
         <button data-tab="history">Histórico</button>
-        <button data-tab="plans">Planos StockBox</button>
+        <button data-tab="plans">Planos</button>
       </nav>
-
-      <section id="message" class="message" style="display:none"></section>
-      <section id="alert" class="alert" style="display:none"></section>
-      <section id="content"></section>
-      <footer id="orderBar" class="orderBar" style="display:none"></footer>
-    </main>
-
-    <script>
-      const DEFAULT_PRODUCTS = [
-        { id: 'monina-multiusos-5l', sku: 'TOT-MON-MULTI-5L', barcode: '5600000000011', name: 'Monina Multiusos 5L', category: 'Detergentes', pack: 'Unidade 5L', image: 'https://placehold.co/320x240?text=Monina+5L', minStock: 4, stock: 8 },
-        { id: 'papel-maos-zigzag', sku: 'TOT-PAP-ZIGZAG', barcode: '5600000000028', name: 'Papel Mãos Zig-Zag', category: 'Papel', pack: 'Caixa', image: 'https://placehold.co/320x240?text=Papel+Maos', minStock: 3, stock: 5 },
-        { id: 'sacos-lixo-100l', sku: 'TOT-SACOS-100L', barcode: '5600000000035', name: 'Sacos do Lixo 100L', category: 'Sacos', pack: 'Rolo', image: 'https://placehold.co/320x240?text=Sacos+100L', minStock: 6, stock: 10 },
-        { id: 'luvas-nitrilo-m', sku: 'TOT-LUV-NIT-M', barcode: '5600000000042', name: 'Luvas Nitrilo Tamanho M', category: 'EPIs', pack: 'Caixa 100 un.', image: 'https://placehold.co/320x240?text=Luvas+Nitrilo', minStock: 5, stock: 7 }
-      ];
-
-      let products = JSON.parse(localStorage.getItem('tot-products') || 'null') || DEFAULT_PRODUCTS;
-      let movements = JSON.parse(localStorage.getItem('tot-movements') || '[]');
-      let cart = {};
-      let mode = 'order';
-      let query = '';
-
-      function save() {
-        localStorage.setItem('tot-products', JSON.stringify(products));
-        localStorage.setItem('tot-movements', JSON.stringify(movements));
-      }
-
-      function setMessage(text) {
-        const el = document.getElementById('message');
-        el.textContent = text;
-        el.style.display = text ? 'block' : 'none';
-      }
-
-      function lowStock() {
-        return products.filter(p => p.stock <= p.minStock);
-      }
-
-      function updateStats() {
-        document.getElementById('productCount').textContent = `${products.length} produtos`;
-        document.getElementById('cartCount').textContent = `${Object.keys(cart).length} linhas`;
-      }
-
-      function updateStock(productId, delta, reason) {
-        const product = products.find(p => p.id === productId);
-        if (!product) return;
-        product.stock = Math.max(0, product.stock + delta);
-        movements = [{
-          id: crypto.randomUUID(), productId, productName: product.name, sku: product.sku, barcode: product.barcode,
-          delta, reason, createdAt: new Date().toISOString()
-        }, ...movements].slice(0, 200);
-        save();
-        setMessage(`${reason}: ${product.name} (${delta > 0 ? '+' : ''}${delta})`);
-        render();
-      }
-
-      function addToCart(productId, qty) {
-        cart[productId] = Math.max(0, (cart[productId] || 0) + qty);
-        if (!cart[productId]) delete cart[productId];
-        render();
-      }
-
-      function suggestedOrder() {
-        lowStock().forEach(p => {
-          cart[p.id] = Math.max(cart[p.id] || 0, p.minStock * 2 - p.stock);
-        });
-        mode = 'order';
-        setMessage('Produtos em stock mínimo adicionados à encomenda sugerida.');
-        render();
-      }
-
-      function submitOrder() {
-        const total = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-        if (!total) return setMessage('A encomenda está vazia.');
-        const orderId = `TOT-${Date.now()}`;
-        cart = {};
-        setMessage(`Encomenda ${orderId} criada. Na próxima fase será enviada para a TOT/Odoo.`);
-        render();
-      }
-
-      function renderAlert() {
-        const alert = document.getElementById('alert');
-        const lows = lowStock();
-        if (!lows.length || mode === 'plans') {
-          alert.style.display = 'none';
-          return;
-        }
-        alert.innerHTML = `<strong>${lows.length} produto(s) em stock mínimo.</strong><button onclick="suggestedOrder()">Gerar encomenda sugerida</button>`;
-        alert.style.display = 'flex';
-      }
-
-      function renderProducts() {
-        const content = document.getElementById('content');
-        const q = query.trim().toLowerCase();
-        const filtered = q ? products.filter(p => [p.name, p.category, p.sku, p.barcode].join(' ').toLowerCase().includes(q)) : products;
-        content.innerHTML = `
-          <section class="searchBox"><span>🔎</span><input id="searchInput" placeholder="Pesquisar produto, categoria, SKU ou código" value="${query}"></section>
-          <section class="grid">
-            ${filtered.map(product => `
-              <article class="card">
-                <img src="${product.image}" alt="${product.name}">
-                <div class="cardBody">
-                  <span class="category">${product.category}</span>
-                  <h3>${product.name}</h3>
-                  <p>${product.pack}</p>
-                  <p class="sku">SKU: ${product.sku}</p>
-                  <div class="${product.stock <= product.minStock ? 'stock low' : 'stock'}">Stock: <strong>${product.stock}</strong> · Mínimo: ${product.minStock}</div>
-                  ${mode === 'order' ? `
-                    <div class="qtyRow"><button onclick="addToCart('${product.id}', -1)">−</button><span>${cart[product.id] || 0}</span><button onclick="addToCart('${product.id}', 1)">+</button></div>
-                  ` : `
-                    <div class="qtyRow"><button onclick="updateStock('${product.id}', 1, 'Entrada manual')">+ Entrada</button><button onclick="updateStock('${product.id}', -1, 'Saída manual')">− Saída</button></div>
-                  `}
-                </div>
-              </article>
-            `).join('')}
-          </section>`;
-        document.getElementById('searchInput').addEventListener('input', e => { query = e.target.value; renderProducts(); });
-      }
-
-      function renderScanner() {
-        document.getElementById('content').innerHTML = `
-          <section class="scannerPanel">
-            <div style="font-size:44px">📷</div>
-            <h2>Registar entrada ou saída</h2>
-            <p>Leia com scanner Bluetooth ou introduza o código manualmente. A integração por câmara será preparada com BarcodeDetector/ZXing.</p>
-            <input id="barcodeInput" placeholder="Código de barras ou SKU" autofocus>
-            <div class="scannerActions">
-              <button class="success" onclick="barcodeAction('in')">Entrada</button>
-              <button class="danger" onclick="barcodeAction('out')">Saída</button>
-            </div>
-          </section>`;
-        document.getElementById('barcodeInput').focus();
-      }
-
-      function barcodeAction(action) {
-        const code = document.getElementById('barcodeInput').value.trim();
-        const product = products.find(p => p.barcode === code || p.sku.toLowerCase() === code.toLowerCase());
-        if (!product) return setMessage('Código não encontrado. Na próxima fase a app poderá criar automaticamente o produto em estado "por classificar".');
-        updateStock(product.id, action === 'in' ? 1 : -1, action === 'in' ? 'Entrada de stock' : 'Saída de stock');
-      }
-
-      function renderHistory() {
-        document.getElementById('content').innerHTML = `<section class="history"><h2>Movimentos de stock</h2>${movements.length === 0 ? '<p>Ainda não existem movimentos.</p>' : movements.map(m => `<div class="movement"><strong>${m.productName}</strong><span>${m.reason}</span><span>${m.delta > 0 ? '+' : ''}${m.delta}</span><small>${new Date(m.createdAt).toLocaleString('pt-PT')}</small></div>`).join('')}</section>`;
-      }
-
-      function renderPlans() {
-        document.getElementById('content').innerHTML = `
-          <section class="plansHero">
-            <p class="eyebrow">PLANOS STOCKBOX</p>
-            <h2>A plataforma que elimina inventários manuais</h2>
-            <p>A StockBox foi criada para permitir que empresas, lares, hotéis, clínicas, indústrias e retalhistas tenham controlo total dos seus stocks em tempo real. O objetivo é saber o que existe, o que entrou, o que saiu, prever consumos, automatizar reposições e eliminar inventários manuais.</p>
-          </section>
-          <section class="plansGrid">
-            <article class="planCard basic">
-              <h3>🟢 StockBox Basic</h3><p class="subtitle">App · Código de barras · Telemóvel</p>
-              <p class="planSectionTitle">Ideal para</p><ul><li>Lares</li><li>Clínicas</li><li>Restaurantes</li><li>Empresas de limpeza</li><li>Pequenos armazéns</li></ul>
-              <p class="planSectionTitle">Inclui</p><ul><li>Gestão de produtos</li><li>Gestão de stock</li><li>Entradas e saídas</li><li>Inventário manual assistido</li><li>Alertas de stock mínimo</li><li>Sugestão automática de encomenda</li><li>Histórico de movimentos</li><li>Integração ERP</li></ul>
-              <p class="planSectionTitle">Objetivo</p><p>Eliminar folhas Excel, papel e inventários manuais demorados.</p>
-            </article>
-            <article class="planCard smart">
-              <h3>🔵 StockBox Smart</h3><p class="subtitle">Câmaras · IA · Deteção automática</p>
-              <p class="planSectionTitle">Ideal para</p><ul><li>Hotéis</li><li>Cadeias de restauração</li><li>Grandes lares</li><li>Empresas com vários armazéns</li><li>Retalho especializado</li></ul>
-              <p class="planSectionTitle">Inclui tudo do Basic +</p><ul><li>Câmaras inteligentes</li><li>Inteligência Artificial</li><li>Reconhecimento automático de artigos</li><li>Inventário assistido por IA</li><li>Contagem inteligente</li><li>Deterção automática de entradas e saídas</li><li>Relatórios avançados</li></ul>
-              <p class="planSectionTitle">Objetivo</p><p>Reduzir drasticamente o tempo gasto em inventários.</p>
-            </article>
-            <article class="planCard autonomous">
-              <h3>🟣 StockBox Autonomous</h3><p class="subtitle">RFID · Portais · Inventário em tempo real</p>
-              <p class="planSectionTitle">Ideal para</p><ul><li>Hospitais</li><li>Grandes retalhistas</li><li>Logística</li><li>Indústria</li><li>Centros de distribuição</li></ul>
-              <p class="planSectionTitle">Inclui tudo do Smart +</p><ul><li>RFID</li><li>Portais RFID</li><li>Antenas inteligentes</li><li>Sensores</li><li>Inventário permanente</li><li>Entradas e saídas automáticas</li><li>Reposição automática</li><li>Rastreabilidade completa</li></ul>
-              <p class="planSectionTitle">Objetivo</p><p>Eliminar completamente os inventários físicos.</p>
-            </article>
-          </section>
-          <section class="vision"><h2>🎯 Visão StockBox</h2><p>A StockBox pretende tornar-se a plataforma de referência para gestão inteligente de stocks. Através de código de barras, QR Code, Inteligência Artificial, RFID e sensores inteligentes, será possível transformar qualquer despensa, armazém ou loja num espaço inteligente com inventário permanente.</p></section>
-          <section class="roadmap"><h2>🛣️ Roadmap StockBox</h2><div class="roadmapGrid">
-            <div class="roadmapStep"><h4>Fase 1</h4><ul><li>Produtos</li><li>Stock</li><li>Código de barras</li><li>QR Code</li><li>Entradas e saídas</li><li>Stock mínimo</li><li>Sugestões de encomenda</li></ul></div>
-            <div class="roadmapStep"><h4>Fase 2</h4><ul><li>Odoo</li><li>Primavera</li><li>PHC</li><li>Sage</li><li>Moloni</li><li>Vendus</li></ul></div>
-            <div class="roadmapStep"><h4>Fase 3</h4><ul><li>Inteligência Artificial</li><li>Reconhecimento automático</li><li>Inventário assistido</li></ul></div>
-            <div class="roadmapStep"><h4>Fase 4</h4><ul><li>RFID</li><li>Portais inteligentes</li><li>Inventário permanente</li></ul></div>
-            <div class="roadmapStep"><h4>Fase 5</h4><ul><li>Reposição automática</li><li>Previsão de consumo</li><li>Compras automáticas</li><li>Armazém autónomo</li><li>Multi-localização</li><li>Multi-empresa</li></ul></div>
-          </div></section>`;
-      }
-
-      function renderOrderBar() {
-        const bar = document.getElementById('orderBar');
-        if (mode !== 'order') { bar.style.display = 'none'; return; }
-        const total = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-        bar.innerHTML = `<div><strong>Encomenda atual</strong><span>${total} unidades</span></div><button onclick="submitOrder()">Enviar para TOT</button>`;
-        bar.style.display = 'flex';
-      }
-
-      function render() {
-        updateStats();
-        renderAlert();
-        document.querySelectorAll('.tabs button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === mode));
-        document.getElementById('orderBar').style.display = 'none';
-        if (mode === 'order' || mode === 'stock') renderProducts();
-        if (mode === 'scanner') renderScanner();
-        if (mode === 'history') renderHistory();
-        if (mode === 'plans') renderPlans();
-        renderOrderBar();
-      }
-
-      document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => { mode = btn.dataset.tab; query = ''; render(); }));
-      render();
-    </script>
-  </body>
+    </div>
+    <section id="message" class="message" style="display:none"></section>
+    <section id="alert" class="alert" style="display:none"></section>
+    <section id="content"></section>
+    <footer id="orderBar" class="orderBar" style="display:none"></footer>
+  </main>
+  <script>
+    const DEFAULT_PRODUCTS=[{id:'monina-multiusos-5l',sku:'TOT-MON-MULTI-5L',barcode:'5600000000011',name:'Monina Multiusos 5L',category:'Detergentes',pack:'Unidade 5L',image:'https://placehold.co/640x420/e2e8f0/64748b?text=Monina+5L',minStock:4,stock:8},{id:'papel-maos-zigzag',sku:'TOT-PAP-ZIGZAG',barcode:'5600000000028',name:'Papel Mãos Zig-Zag',category:'Papel',pack:'Caixa',image:'https://placehold.co/640x420/e2e8f0/64748b?text=Papel+Maos',minStock:3,stock:5},{id:'sacos-lixo-100l',sku:'TOT-SACOS-100L',barcode:'5600000000035',name:'Sacos do Lixo 100L',category:'Sacos',pack:'Rolo',image:'https://placehold.co/640x420/e2e8f0/64748b?text=Sacos+100L',minStock:6,stock:10},{id:'luvas-nitrilo-m',sku:'TOT-LUV-NIT-M',barcode:'5600000000042',name:'Luvas Nitrilo Tamanho M',category:'EPIs',pack:'Caixa 100 un.',image:'https://placehold.co/640x420/e2e8f0/64748b?text=Luvas+Nitrilo',minStock:5,stock:7}];
+    let products=JSON.parse(localStorage.getItem('tot-products')||'null')||DEFAULT_PRODUCTS,movements=JSON.parse(localStorage.getItem('tot-movements')||'[]'),cart={},mode='home',query='';
+    const content=document.getElementById('content');
+    function save(){localStorage.setItem('tot-products',JSON.stringify(products));localStorage.setItem('tot-movements',JSON.stringify(movements))}
+    function setMessage(t){const e=document.getElementById('message');e.textContent=t;e.style.display=t?'block':'none'}
+    function lowStock(){return products.filter(p=>p.stock<=p.minStock)}
+    function setMode(m){mode=m;query='';render()}
+    function updateStock(id,delta,reason){const p=products.find(x=>x.id===id);if(!p)return;p.stock=Math.max(0,p.stock+delta);movements=[{id:crypto.randomUUID(),productName:p.name,sku:p.sku,barcode:p.barcode,delta,reason,createdAt:new Date().toISOString()},...movements].slice(0,200);save();setMessage(`${reason}: ${p.name} (${delta>0?'+':''}${delta})`);render()}
+    function addToCart(id,qty){cart[id]=Math.max(0,(cart[id]||0)+qty);if(!cart[id])delete cart[id];render()}
+    function suggestedOrder(){lowStock().forEach(p=>cart[p.id]=Math.max(cart[p.id]||0,p.minStock*2-p.stock));setMode('order');setMessage('Produtos em stock mínimo adicionados à encomenda sugerida.')}
+    function submitOrder(){const total=Object.values(cart).reduce((s,q)=>s+q,0);if(!total)return setMessage('A encomenda está vazia.');cart={};setMessage(`Encomenda TOT-${Date.now()} criada. Na próxima fase será enviada para a TOT/Odoo.`);render()}
+    function renderAlert(){const a=document.getElementById('alert'),l=lowStock();if(!l.length||mode==='home'||mode==='plans'){a.style.display='none';return}a.innerHTML=`<strong>${l.length} produto(s) em stock mínimo.</strong><button onclick="suggestedOrder()">Gerar encomenda sugerida</button>`;a.style.display='flex'}
+    function renderHome(){content.innerHTML=`<section class="landingHero"><div><p class="eyebrow">StockBox by TOT</p><h1>O futuro da gestão automática de stocks.</h1><p>Controle o stock em tempo real, reduza inventários manuais, automatize reposições e transforme qualquer despensa, armazém ou loja num espaço inteligente.</p><div class="heroButtons"><button class="primaryBtn" onclick="setMode('order')">Entrar na Plataforma</button><button class="secondaryBtn" onclick="setMode('plans')">Ver Planos</button></div></div><div class="mockDashboard pulse"><div class="mockHeader"><span class="pill">Inventário vivo</span><span class="pill">Reposição TOT</span></div><div class="mockGrid"><div class="mockCard"><strong>${products.length}</strong><span>produtos monitorizados</span></div><div class="mockCard"><strong>${lowStock().length}</strong><span>alertas de stock mínimo</span></div><div class="mockCard"><strong>Basic</strong><span>código de barras + app</span></div><div class="mockCard"><strong>RFID</strong><span>inventário em tempo real</span></div></div></div></section><section class="section"><h2 class="sectionTitle">O problema que resolvemos</h2><p class="sectionLead">Muitas empresas ainda fecham lojas, param equipas ou pagam horas extra para contar stock. A StockBox foi desenhada para substituir esse processo por movimentos digitais, leitura automática e reposição inteligente.</p><div class="problemGrid"><div class="problem">Inventários demorados</div><div class="problem">Erros de contagem</div><div class="problem">Ruturas de produto</div><div class="problem">Custos operacionais</div><div class="problem">Vendas perdidas</div></div></section><section class="section"><h2 class="sectionTitle">A solução StockBox</h2><div class="featureGrid"><div class="feature"><div class="icon">📦</div><h3>Gestão de stock</h3><p>Entradas, saídas, mínimos, histórico e encomendas num único painel.</p></div><div class="feature"><div class="icon">📷</div><h3>Leitura inteligente</h3><p>Código de barras, QR Code, scanner Bluetooth e câmara do telemóvel.</p></div><div class="feature"><div class="icon">🤖</div><h3>IA e câmaras</h3><p>Preparada para reconhecimento visual e inventário assistido.</p></div><div class="feature"><div class="icon">📡</div><h3>RFID</h3><p>Arquitetura preparada para portais RFID e inventário permanente.</p></div></div></section><section class="section"><h2 class="sectionTitle">Como funciona</h2><div class="process"><div class="step"><small>1</small><h3>Entrega</h3><p>A TOT ou fornecedor entrega produto.</p></div><div class="step"><small>2</small><h3>Entrada</h3><p>Produto é registado por leitura ou automação.</p></div><div class="step"><small>3</small><h3>Consumo</h3><p>Saídas atualizam o stock.</p></div><div class="step"><small>4</small><h3>Alerta</h3><p>Stock mínimo gera sugestão.</p></div><div class="step"><small>5</small><h3>Reposição</h3><p>Pedido segue para a TOT/ERP.</p></div></div></section><section class="section"><h2 class="sectionTitle">Mercados prioritários</h2><div class="featureGrid"><div class="market"><div class="icon">🏥</div><h3>Hospitais</h3><p>Consumíveis críticos e rastreabilidade.</p></div><div class="market"><div class="icon">👵</div><h3>Lares</h3><p>Despensas pequenas com reposição recorrente.</p></div><div class="market"><div class="icon">🏨</div><h3>Hotéis</h3><p>Produtos por piso, zona e armazém.</p></div><div class="market"><div class="icon">🛒</div><h3>Retalho</h3><p>Inventário permanente e redução de quebras.</p></div></div></section><section class="vision"><h2>Visão StockBox</h2><p>A StockBox pretende tornar-se a plataforma portuguesa de referência para gestão inteligente de stocks, ligando despensas, armazéns, lojas, equipas comerciais e sistemas de faturação numa única operação digital.</p></section>`}
+    function renderProducts(){const q=query.trim().toLowerCase(),filtered=q?products.filter(p=>[p.name,p.category,p.sku,p.barcode].join(' ').toLowerCase().includes(q)):products;content.innerHTML=`<header class="hero"><div><p class="eyebrow">TOT</p><h1>Despensa Digital</h1><p>Cliente TOT - Demonstração · Despensa principal</p></div><div class="heroStats"><span>📦 ${products.length} produtos</span><span>🛒 ${Object.keys(cart).length} linhas</span></div></header><nav class="tabs"><button class="${mode==='order'?'active':''}" onclick="setMode('order')">Encomendar</button><button class="${mode==='stock'?'active':''}" onclick="setMode('stock')">Stock</button><button onclick="setMode('scanner')">Código de barras</button><button onclick="setMode('history')">Histórico</button></nav><section class="searchBox">🔎<input id="searchInput" placeholder="Pesquisar produto, categoria, SKU ou código" value="${query}"></section><section class="grid">${filtered.map(p=>`<article class="card"><img src="${p.image}" alt="${p.name}"><div class="cardBody"><span class="category">${p.category}</span><h3>${p.name}</h3><p>${p.pack}</p><p class="sku">SKU: ${p.sku}</p><div class="${p.stock<=p.minStock?'stock low':'stock'}">Stock: <strong>${p.stock}</strong> · Mínimo: ${p.minStock}</div>${mode==='order'?`<div class="qtyRow"><button onclick="addToCart('${p.id}',-1)">−</button><span>${cart[p.id]||0}</span><button onclick="addToCart('${p.id}',1)">+</button></div>`:`<div class="qtyRow"><button onclick="updateStock('${p.id}',1,'Entrada manual')">+ Entrada</button><button onclick="updateStock('${p.id}',-1,'Saída manual')">− Saída</button></div>`}</div></article>`).join('')}</section>`;document.getElementById('searchInput').addEventListener('input',e=>{query=e.target.value;renderProducts()})}
+    function renderScanner(){content.innerHTML=`<section class="scannerPanel"><div style="font-size:44px">📷</div><h2>Registar entrada ou saída</h2><p>Leia com scanner Bluetooth ou introduza o código manualmente.</p><input id="barcodeInput" placeholder="Código de barras ou SKU" autofocus><div class="scannerActions"><button class="success" onclick="barcodeAction('in')">Entrada</button><button class="danger" onclick="barcodeAction('out')">Saída</button></div></section>`;document.getElementById('barcodeInput').focus()}
+    function barcodeAction(action){const code=document.getElementById('barcodeInput').value.trim(),p=products.find(x=>x.barcode===code||x.sku.toLowerCase()===code.toLowerCase());if(!p)return setMessage('Código não encontrado. Na próxima fase a app poderá criar automaticamente o produto em estado por classificar.');updateStock(p.id,action==='in'?1:-1,action==='in'?'Entrada de stock':'Saída de stock')}
+    function renderHistory(){content.innerHTML=`<section class="history"><h2>Movimentos de stock</h2>${movements.length===0?'<p>Ainda não existem movimentos.</p>':movements.map(m=>`<div class="movement"><strong>${m.productName}</strong><span>${m.reason}</span><span>${m.delta>0?'+':''}${m.delta}</span><small>${new Date(m.createdAt).toLocaleString('pt-PT')}</small></div>`).join('')}</section>`}
+    function renderPlans(){content.innerHTML=`<section class="plansHero"><p class="eyebrow">Planos StockBox</p><h2>A plataforma que elimina inventários manuais</h2><p>A StockBox foi criada para permitir que empresas, lares, hotéis, clínicas, indústrias e retalhistas tenham controlo total dos seus stocks em tempo real.</p></section><section class="plansGrid"><article class="planCard basic"><h3>🟢 StockBox Basic</h3><p class="subtitle">App · Código de barras · Telemóvel</p><p class="planSectionTitle">Ideal para</p><ul><li>Lares</li><li>Clínicas</li><li>Restaurantes</li><li>Pequenos armazéns</li></ul><p class="planSectionTitle">Inclui</p><ul><li>Gestão de produtos</li><li>Entradas e saídas</li><li>Stock mínimo</li><li>QR Code</li><li>Integração ERP</li></ul></article><article class="planCard smart"><h3>🔵 StockBox Smart</h3><p class="subtitle">Câmaras · IA · Deteção automática</p><p class="planSectionTitle">Inclui tudo do Basic +</p><ul><li>Câmaras inteligentes</li><li>Reconhecimento automático</li><li>Inventário assistido por IA</li><li>Relatórios avançados</li></ul></article><article class="planCard autonomous"><h3>🟣 StockBox Autonomous</h3><p class="subtitle">RFID · Portais · Tempo real</p><p class="planSectionTitle">Inclui tudo do Smart +</p><ul><li>Portais RFID</li><li>Inventário permanente</li><li>Entradas e saídas automáticas</li><li>Reposição automática</li><li>Rastreabilidade completa</li></ul></article></section><section class="roadmap"><h2>🛣️ Roadmap StockBox</h2><div class="roadmapGrid"><div class="roadmapStep"><h4>Fase 1</h4><ul><li>Produtos</li><li>Stock</li><li>Código de barras</li><li>Encomendas</li></ul></div><div class="roadmapStep"><h4>Fase 2</h4><ul><li>Odoo</li><li>Primavera</li><li>PHC</li><li>Moloni</li></ul></div><div class="roadmapStep"><h4>Fase 3</h4><ul><li>IA</li><li>Câmaras</li><li>Inventário assistido</li></ul></div><div class="roadmapStep"><h4>Fase 4</h4><ul><li>RFID</li><li>Portais</li><li>Inventário permanente</li></ul></div></div></section>`}
+    function renderOrderBar(){const bar=document.getElementById('orderBar');if(mode!=='order'){bar.style.display='none';return}const total=Object.values(cart).reduce((s,q)=>s+q,0);bar.innerHTML=`<div><strong>Encomenda atual</strong><span>${total} unidades</span></div><button onclick="submitOrder()">Enviar para TOT</button>`;bar.style.display='flex'}
+    function render(){document.querySelectorAll('.mainNav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===mode||(mode==='stock'&&b.dataset.tab==='order')));renderAlert();document.getElementById('orderBar').style.display='none';if(mode==='home')renderHome();if(mode==='order'||mode==='stock')renderProducts();if(mode==='scanner')renderScanner();if(mode==='history')renderHistory();if(mode==='plans')renderPlans();renderOrderBar()}
+    document.querySelectorAll('.mainNav button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.tab)));render();
+  </script>
+</body>
 </html>
